@@ -1,0 +1,3 @@
+[submodule "jvrc_models/model"]
+	path = jvrc_models/model
+	url = https://github.com/jvrc/model.git
