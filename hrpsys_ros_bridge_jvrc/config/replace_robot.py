@@ -60,16 +60,19 @@ conf = yaml.load(file(sys.argv[1], 'r'), Loader=yaml.CLoader)
 for f in glob.glob('jaxon*.cnoid'):
     d = yaml.load(file(f, 'r'), Loader=yaml.CLoader)
     items = d['items']['children'][0]['children']
-    for i, v in enumerate(items):
-        if v['name'] == 'JAXON_JVRC':
-            items[i] = conf['robot'][0]
-        if v['class'] == 'AISTSimulatorItem':
+    nitems = [conf['robot'][0]]
+    for i in items:
+        if i['name'] == 'JAXON_JVRC':
+            continue
+        if i['class'] == 'AISTSimulatorItem':
             newc = []
-            for c in v['children']:
+            for c in i['children']:
                 if c['class'] != 'GLVisionSimulatorItem':
                     newc.append(c)
             newc.extend(conf['sensors'])
-            v['children'] = newc
+            i['children'] = newc
+        nitems.append(i)
+    d['items']['children'][0]['children'] = nitems
     numitems = 0
     traverse(d['items'])
     for v in d['views']:
