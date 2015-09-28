@@ -11,6 +11,7 @@
 #robot:
 #  - 
 #    name: "MIDJAXON"
+#    positionOffset: [0, 0, -0.5]
 #    plugin: Body
 #    class: BodyItem
 #    data: 
@@ -63,6 +64,16 @@ for f in glob.glob('jaxon*.cnoid'):
     nitems = [conf['robot'][0]]
     for i in items:
         if i['name'] == 'JAXON_JVRC':
+            for v in ['rootPosition', 'rootAttitude', 'initialRootPosition', 'initialRootAttitude']:
+                if v.find('Position') >= 0:
+                    p = i['data'][v]
+                    offset = conf['robot'][0].get('positionOffset')
+                    if offset:
+                        for j in range(0, 3):
+                            p[j] += offset[j]
+                    nitems[0]['data'][v] = p
+                else:
+                    nitems[0]['data'][v] = i['data'][v]
             continue
         if i['class'] == 'AISTSimulatorItem':
             newc = []
