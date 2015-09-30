@@ -155,29 +155,36 @@ RTC::ReturnCode_t PDcontroller::onExecute(RTC::UniqueId ec_id)
     double q_ref = m_angleRef.data[i];
     double dq = (q - qold[i]) / dt;
     double dq_ref = (q_ref - qold_ref[i]) / dt;
+    double ddq = (dq - dqold[i]) / dt;
+    double ddq_ref = (dq_ref - dqold_ref[i]) / dt;
     qold[i] = q;
     qold_ref[i] = q_ref;
+    dqold[i] = dq;
+    dqold_ref[i] = dq_ref;
     m_torque.data[i] = -(q - q_ref) * Pgain[i] - (dq - dq_ref) * Dgain[i];
-    //double tlimit = m_robot->joint(i)->climit * m_robot->joint(i)->gearRatio * m_robot->joint(i)->torqueConst;
-    if (i == (dof - 1)) { // for range joint, fixed rotational rate of 2.0 [rad/sec]
-      static double dq_old = 0.0;
-      double ddq = (dq - dq_old)/dt;
+    if (i == 25) { // for range joint, fixed rotational rate of 2.0 [rad/sec]
       m_torque.data[i] = -(dq - 1.0) * 100 - 0.2 * ddq;
-      double tlimit = 200;
-      m_torque.data[i] = std::max(std::min(m_torque.data[i], tlimit), -tlimit);
-      //std::cerr << "tau: " << m_torque.data[i] << ", q: " << q << ", dq: " << dq << ", dq_old: " << dq_old << ", ddq: " << ddq << std::endl;
-      dq_old = dq;
     }
+    if (i >= 30) { // for crawler joints, fixed rotational rate is specified
+      m_torque.data[i] = -(dq - q_ref) * Pgain[i] - (ddq - ddq_ref) * Dgain[i];
+    }
+    //double tlimit = m_robot->joint(i)->climit * m_robot->joint(i)->gearRatio * m_robot->joint(i)->torqueConst;
     double tlimit;
-    if (i < 15) {
-      // torso/leg
+    if (i <= 2) {
+      // torso
       tlimit = 1200;
-    } else if (i < 33) {
+    } else if (i <= 20) {
       // arm/head
       tlimit = 600;
-    } else {
-      // hand
+    } else if (i <= 25) {
+      // hand/motor_joint
       tlimit = 140;
+    } else if (i <= 29){
+      // caterpillar
+      tlimit = 400;
+    } else {
+      // crawler
+      tlimit = 10;
     }
     m_torque.data[i] = std::max(std::min(m_torque.data[i], tlimit), -tlimit);
 #if 0
@@ -202,10 +209,36 @@ void PDcontroller::readGainFile()
     // initialize length of vectors
     qold.resize(dof);
     qold_ref.resize(dof);
+    dqold.resize(dof);
+    dqold_ref.resize(dof);
     m_torque.data.length(dof);
     m_angleRef.data.length(dof);
     Pgain.resize(dof);
     Dgain.resize(dof);
+    for(int i=0; i<dof; i++){
+      if (i <= 2) {
+        // torso
+        Pgain[i] = 60000;
+        Dgain[i] = 240;
+      } else if (i <= 20) {
+        // arm/head
+        Pgain[i] = 20000;
+        Dgain[i] = 320;
+      } else if (i <= 25) {
+        // hand/motor_joint
+        Pgain[i] = 400;
+        Dgain[i] = 10;
+      } else if (i <= 29){
+        // caterpillar
+        Pgain[i] = 40000;
+        Dgain[i] = 240;
+      } else {
+        // crawler
+        Pgain[i] = 40;
+        Dgain[i] = 10;
+      }
+    }
+    /*
     gain.open(gain_fname.c_str());
     if (gain.is_open()){
       double tmp;
@@ -226,9 +259,11 @@ void PDcontroller::readGainFile()
     }else{
       std::cerr << "[" << m_profile.instance_name << "] Gain file [" << gain_fname << "] not opened" << std::endl;
     }
+    */
     // initialize angleRef, old_ref and old with angle
     for(int i=0; i < dof; ++i){
       m_angleRef.data[i] = qold_ref[i] = qold[i] = m_angle.data[i];
+      dqold_ref[i] = dqold[i] = 0.0;
     }
 }
 
