@@ -25,8 +25,8 @@ items:
     - children:
       - class: BodyRTCItem
         data: {AutoConnect: false, InstanceName: MIDJAXON, bodyPeriodicRate: 0.002,
-          confFileName: /home/yosuke/rtmros_choreonoid/hrpsys_ros_bridge_jvrc/config/MIDJAXON.PD.conf,
-          configurationMode: Use Configuration File, isImmediateMode: true, moduleName: /home/yosuke/rtmros_choreonoid/hrpsys_choreonoid/src/PDcontroller}
+          confFileName: /home/player/rtmros_choreonoid/hrpsys_ros_bridge_jvrc/config/MIDJAXON.PD.conf,
+          configurationMode: Use Configuration File, isImmediateMode: true, moduleName: /home/player/rtmros_choreonoid/hrpsys_choreonoid/src/PDcontroller}
         id: 3
         name: BodyRTC
         plugin: OpenRTM
