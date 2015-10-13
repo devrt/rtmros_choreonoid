@@ -104,16 +104,18 @@
   (setup-robot :robot 'jaxon_jvrc-init)
   (send *ri* :set-auto-balancer-param :transition-time 5)
   (send *ri* :start-auto-balancer)
-  (send *ri* :start-grasp))
+  (send *ri* :start-grasp)
+  (send *ri* :start-impedance :arms)
+  (dolist (l (list :rarm :larm)) (send *ri* :set-impedance-controller-param l :k-p 1000)))
 
 (warn "(move-to-init-pose :type :biped)~%")
 (defun move-to-init-pose (&key (type :biped))
   (case type
     (:biped
      (let ((avs (reset-pose-to-touch-down)))
-       (send *ri* :angle-vector (cadr (memq :angle-vector (elt avs 0))))
+       (send *ri* :angle-vector (cadr (memq :angle-vector (elt avs 0))) 200)
        (send *ri* :wait-interpolation)
-       (send *ri* :angle-vector (cadr (memq :angle-vector (elt avs 1))))
+       (send *ri* :angle-vector (cadr (memq :angle-vector (elt avs 1))) 800)
        (send *ri* :wait-interpolation))
      (send *ri* :start-st)
      (send *robot* :angle-vector (send *ri* :state :potentio-vector))
@@ -130,51 +132,9 @@
      (send *ri* :stop-auto-balancer))
     ))
 
-(defun go-pos-quad-params->footstep-list (&key (x 0) (y 0) (th 0) (type :crawl))
-  (let* ((tmp-fsl (send *robot* :go-pos-params->footstep-list x y th
-                        :forward-offset-length 100 :rotate-rad 3))
-         fsl)
-    ;; calculate foot step list for quad walk
-    (dolist (fs tmp-fsl)
-      (let* ((fs-leg-name (send fs :name))
-             (offset (send (send *robot* fs-leg-name :end-coords :copy-worldcoords)
-                           :transformation fs :world))
-             (target-arm-name))
-        (case type
-              (:crawl
-               (dolist (l (list fs-leg-name (case fs-leg-name (:lleg :larm) (:rleg :rarm))))
-                 (push (list (make-coords :coords (send (send *robot* l :end-coords :copy-worldcoords)
-                                                        :transform offset :world)
-                                          :name l)) fsl)))
-              (:trot
-               (push (mapcar #'(lambda (l)
-                                 (make-coords :coords (send (send *robot* l :end-coords :copy-worldcoords)
-                                                            :transform offset :world)
-                                              :name l))
-                             (list fs-leg-name (setq target-arm-name (case fs-leg-name (:lleg :rarm) (:rleg :larm))))) fsl))
-              (:pace
-               (push (mapcar #'(lambda (l)
-                                 (make-coords :coords (send (send *robot* l :end-coords :copy-worldcoords)
-                                                            :transform offset :world)
-                                              :name l))
-                             (list fs-leg-name (case fs-leg-name (:lleg :larm) (:rleg :rarm)))) fsl))
-              (:gallop
-               (push (mapcar #'(lambda (l)
-                                 (make-coords :coords (send (send *robot* l :end-coords :copy-worldcoords)
-                                                            :transform offset :world)
-                                              :name l))
-                             (list (case fs-leg-name (:rleg :rleg) (:lleg :rarm))
-                                   (case fs-leg-name (:rleg :lleg) (:lleg :larm)))) fsl))
-              )))
-    ;; viewing
-    (dolist (fs fsl)
-      (dolist (f fs)
-        (send f :draw-on :flush t :size 200)))
-    (reverse fsl)))
-
 (defun go-pos-quad (&key (x 0) (y 0) (th 0) (type :crawl) (debug-view nil) (dt 0.1)
                          (default-step-time 1.0) (default-step-height 50))
-  (let* ((fsl (go-pos-quad-params->footstep-list :x x :y y :th th :type type))
+  (let* ((fsl (send *robot* :go-pos-quadruped-params->footstep-list x y th :type type))
          (ik-args
           (list :min (float-vector -1e5 -1e5 -1e5 -180 -180 -180)
                 :max (float-vector +1e5 +1e5 +1e5 +180 +180 +180)
@@ -213,3 +173,31 @@
           (mapcar #'(lambda (x) (cadr (memq :angle-vector x))) walk-pattern) tms)
     (send *ri* :wait-interpolation)
     ))
+
+(defun auto-mode ()
+  (format t "start-auto-mode: ~A~%" (unix::asctime (unix::localtime)))
+  (init)
+  (format t "init done: ~A~%" (unix::asctime (unix::localtime)))
+  (move-to-init-pose)
+  (format t "move-to-init-pose done: ~A~%" (unix::asctime (unix::localtime)))
+  (send *ri* :set-gait-generator-param
+        :default-step-time 1.0
+        :stride-parameter (float-vector 0.15 0.05 30.0 0.05)
+        :optional-go-pos-finalize-footstep-num 0)
+  (progn
+    (send *ri* :go-pos (+ (* 1.5 1) 0.3) 0 0)
+    (send *ri* :go-pos 0 0 90)
+    (send *ri* :go-pos (+ (* 1.5 3) 0.3) 0 0)
+    (send *ri* :go-pos 0 0 -90)
+    (send *ri* :go-pos (+ (* 1.5 4) 0.3) 0 0)
+    (send *ri* :go-pos 0 0 -90)
+    (send *ri* :go-pos (+ (* 1.5 1) 0.3) 0 0)
+    (send *ri* :go-pos 0 0 90)
+    (send *ri* :go-pos (+ (* 1.5 1) 0.3) 0 0)
+    (send *ri* :go-pos 0 0 -90)
+    (send *ri* :go-pos (+ (* 1.5 2) 0.3) 0 0)
+    (send *ri* :go-pos 0 0 90)
+    (send *ri* :go-pos (+ (* 1.5 2) 0.3) 0 0)
+    )
+  (format t "finish: ~A~%" (unix::asctime (unix::localtime)))
+  )
