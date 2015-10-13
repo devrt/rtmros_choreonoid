@@ -4,11 +4,12 @@
   (jaxon_jvrc-init)
   (setq *robot* *jaxon_jvrc*)
   )
-(unless (equal (send *ri* :get-auto-balancer-controller-mode) :mode_abc)
-  (send *ri* :start-auto-balancer))
-(unless (equal (send *ri* :get-st-controller-mode) :mode_st)
-  (send *ri* :start-st))
 
+(send *ri* :start-auto-balancer)
+(send *ri* :start-st)
+
+(warn "~%enter to start~%")
+(read-line)
 (send *ri* :set-gait-generator-param
       :optional-go-pos-finalize-footstep-num 0
       :default-step-time 0.8
@@ -28,19 +29,20 @@
 (defun start-cross ()
   (send *ri* :set-gait-generator-param
         :default-orbit-type :cross
-        :default-step-time 1.6
-        :default-step-height 0.08)
+        :default-step-time 1.8)
   (send *ri* :set-foot-steps
         (list (make-coords :pos (float-vector 0 0 0) :name :lleg)
               (make-coords :pos (float-vector (- (car *cross-step-stride*)) *width-offset* 0) :name :rleg)))
+  (send *ri* :set-gait-generator-param :default-step-time 1.4)
   )
 
 (defun stop-cross ()
+  (send *ri* :set-gait-generator-param :default-step-time 1.6)
   (send *ri* :set-foot-steps
         (list (make-coords :pos (float-vector 0 0 0) :name :lleg)
               (make-coords :pos (float-vector 0 -200 0) :name :rleg)))
   (send *ri* :set-gait-generator-param
-        :default-orbit-type :cycloid
+        :default-orbit-type :cycloiddelay
         :default-step-height 0.07
         :default-step-time 0.8)
   )
@@ -85,7 +87,9 @@
                               (make-coords :pos (float-vector (* 2 (car *cross-step-stride*)) 0 0) :name :lleg)))))
               (when (not (= x-mod 0))
                 (when (y-or-n-p "4:go-pos ~A ~A ~A~%" (* 1e-3 x-mod) 0 0)
-                  (send *ri* :set-gait-generator-param :default-orbit-type :stair)
+                  (send *ri* :set-gait-generator-param
+                        :default-orbit-type :stair
+                        :default-step-time 0.8)
                   (send *ri* :set-foot-steps
                         (list (make-coords :pos (float-vector 0 0 0) :name :rleg)
                               (make-coords :pos (float-vector (+ (/ x-mod 3.0) (car *cross-step-stride*)) (- *width-offset*) 0) :name :lleg)
@@ -114,7 +118,9 @@
                             (make-coords :pos (float-vector (* 2 (- (car *cross-step-stride*))) 0 0) :name :rleg)))))
             (when (not (= x-mod 0))
               (when (y-or-n-p "8:go-pos ~A ~A ~A~%" (* 1e-3 x-mod) 0 0)
-                (send *ri* :set-gait-generator-param :default-orbit-type :stair)
+                (send *ri* :set-gait-generator-param
+                      :default-orbit-type :stair
+                      :default-step-time 0.8)
                 (send *ri* :set-foot-steps
                       (list (make-coords :pos (float-vector 0 0 0) :name :lleg)
                             (make-coords :pos (float-vector (+ (/ x-mod 3.0) (- (car *cross-step-stride*))) *width-offset* 0) :name :rleg)
@@ -131,7 +137,9 @@
                       (list (make-coords :pos (float-vector 0 0 0) :name :lleg)
                             (make-coords :pos (float-vector (car *cross-step-stride*) (+ (cadr *cross-step-stride*) *width-offset*)  0) :name :rleg)
                             (make-coords :pos (float-vector (* 2 (car *cross-step-stride*)) (cadr *cross-step-stride*) 0) :name :lleg)))))
-            (send *ri* :set-gait-generator-param :default-orbit-type :stair)
+            (send *ri* :set-gait-generator-param
+                  :default-orbit-type :stair
+                  :default-step-time 0.8)
             (dotimes (i (- y-x 1))
               (when (y-or-n-p "10:go-pos ~A ~A ~A~%" 0 (* 1e-3 (cadr *cross-step-stride*)) 0)
                 (send *ri* :set-foot-steps
@@ -140,7 +148,9 @@
                             (make-coords :pos (float-vector 0 (cadr *cross-step-stride*) 0) :name :lleg)))))
             (when (or (not (= x-mod 0)) (not (= y-mod 0)))
               (when (y-or-n-p "11:go-pos ~A ~A ~A~%" (* 1e-3 x-mod) (* 1e-3 y-mod) 0)
-                (send *ri* :set-gait-generator-param :default-orbit-type :stair)
+                (send *ri* :set-gait-generator-param
+                      :default-orbit-type :stair
+                      :default-step-time 0.8)
                 (send *ri* :set-foot-steps
                       (list (make-coords :pos (float-vector 0 0 0) :name :rleg)
                             (make-coords :pos (float-vector (+ (/ x-mod 3.0) (car *cross-step-stride*)) (- (/ y-mod 3.0) *width-offset*) 0) :name :lleg)
@@ -156,7 +166,9 @@
                     (list (make-coords :pos (float-vector 0 0 0) :name :rleg)
                           (make-coords :pos (float-vector (- (car *cross-step-stride*)) (- (cadr *cross-step-stride*) *width-offset*)  0) :name :lleg)
                           (make-coords :pos (float-vector (* 2 (- (car *cross-step-stride*))) (cadr *cross-step-stride*) 0) :name :rleg)))))
-          (send *ri* :set-gait-generator-param :default-orbit-type :stair)
+          (send *ri* :set-gait-generator-param
+                :default-orbit-type :stair
+                :default-step-time 0.8)
           (dotimes (i y-x)
             (when (y-or-n-p "13:go-pos ~A ~A ~A~%" 0 (* 1e-3 (cadr *cross-step-stride*)) 0)
               (send *ri* :set-foot-steps
@@ -165,7 +177,9 @@
                           (make-coords :pos (float-vector 0 (cadr *cross-step-stride*) 0) :name :rleg)))))
           (when (or (not (= x-mod 0)) (not (= y-mod 0)))
             (when (y-or-n-p "14:go-pos ~A ~A ~A~%" (* 1e-3 x-mod) (* 1e-3 y-mod) 0)
-              (send *ri* :set-gait-generator-param :default-orbit-type :stair)
+              (send *ri* :set-gait-generator-param
+                    :default-orbit-type :stair
+                    :default-step-time 0.8)
               (send *ri* :set-foot-steps
                     (list (make-coords :pos (float-vector 0 0 0) :name :lleg)
                           (make-coords :pos (float-vector (+ (/ x-mod 3.0) (- (car *cross-step-stride*))) (+ *width-offset* (/ y-mod 3.0)) 0) :name :rleg)
@@ -175,7 +189,9 @@
                           (make-coords :pos (float-vector (+ (* 3 (/ x-mod 3.0)) (- (car *cross-step-stride*))) (+ *width-offset* (* 3 (/ y-mod 3.0))) 0) :name :rleg)
                           (make-coords :pos (float-vector (* 3 (/ x-mod 3.0)) (* 3 (/ y-mod 3.0)) 0) :name :lleg))))))))
     (unless (= yaw 0)
-      (send *ri* :set-gait-generator-param :default-orbit-type :stair)
+      (send *ri* :set-gait-generator-param
+            :default-orbit-type :stair
+            :default-step-time 0.8)
       (if (> yaw 0)
           (progn
             (dotimes (i yaw-times)
@@ -203,4 +219,49 @@
                     (list (make-coords :pos (float-vector 0 0 0) :name :lleg)
                           (make-coords :pos (float-vector (+ (/ (- (car *cross-step-stride*)) 2.0) (* (/ (- (car *cross-step-stride*)) 2.0) (cos (deg2rad yaw-mod)))) (+ *width-offset* (* (/ (- (car *cross-step-stride*)) 2.0) (sin (deg2rad yaw-mod)))) 0) :rpy (list (deg2rad yaw-mod) 0 0) :name :rleg)
                           (make-coords :pos (float-vector (- (/ (- (car *cross-step-stride*)) 2.0) (* (/ (- (car *cross-step-stride*)) 2.0) (cos (deg2rad yaw-mod)))) (- (* (/ (- (car *cross-step-stride*)) 2.0) (sin (deg2rad yaw-mod)))) 0) :rpy (list (deg2rad yaw-mod) 0 0) :name :lleg))))))))
-    (send *ri* :set-gait-generator-param :default-orbit-type :cross)))
+    (send *ri* :set-gait-generator-param
+          :default-orbit-type :cross
+          :default-step-time 1.4))
+  )
+
+(defun cross-step-f ()
+  (when (y-or-n-p "19:go-pos ~A ~A ~A~%" 1 0 0)
+    (send *ri* :set-foot-steps
+          (list (make-coords :pos (float-vector 0 0 0) :name :lleg)
+                (make-coords :pos (float-vector (car *cross-step-stride*) *width-offset* 0) :name :rleg)
+                (make-coords :pos (float-vector (* 2 (car *cross-step-stride*)) 0 0) :name :lleg)
+                (make-coords :pos (float-vector (* 3 (car *cross-step-stride*)) *width-offset* 0) :name :rleg)
+                (make-coords :pos (float-vector (* 4 (car *cross-step-stride*)) 0 0) :name :lleg))))
+  )
+
+(defun cross-step-f2 ()
+  (when (y-or-n-p "20:go-pos ~A ~A ~A~%" 2 0 0)
+    (send *ri* :set-foot-steps
+          (list (make-coords :pos (float-vector 0 0 0) :name :lleg)
+                (make-coords :pos (float-vector (car *cross-step-stride*) *width-offset* 0) :name :rleg)
+                (make-coords :pos (float-vector (* 2 (car *cross-step-stride*)) 0 0) :name :lleg)
+                (make-coords :pos (float-vector (* 3 (car *cross-step-stride*)) *width-offset* 0) :name :rleg)
+                (make-coords :pos (float-vector (* 4 (car *cross-step-stride*)) 0 0) :name :lleg)
+                (make-coords :pos (float-vector (* 5 (car *cross-step-stride*)) *width-offset* 0) :name :rleg)
+                (make-coords :pos (float-vector (* 6 (car *cross-step-stride*)) 0 0) :name :lleg)
+                (make-coords :pos (float-vector (* 7 (car *cross-step-stride*)) *width-offset* 0) :name :rleg)
+                (make-coords :pos (float-vector (* 8 (car *cross-step-stride*)) 0 0) :name :lleg))))
+  )
+
+(defun cross-step-l ()
+  (when (y-or-n-p "21:go-pos ~A ~A ~A~%" 0 (* 3 (* 1e-3 (cadr *cross-step-stride*))) 0)
+    (send *ri* :set-gait-generator-param
+          :default-orbit-type :stair
+          :default-step-time 0.8)
+    (send *ri* :set-foot-steps
+          (list (make-coords :pos (float-vector 0 0 0) :name :rleg)
+                (make-coords :pos (float-vector (car *cross-step-stride*) (- (cadr *cross-step-stride*) *width-offset*) 0) :name :lleg)
+                (make-coords :pos (float-vector 0 (cadr *cross-step-stride*) 0) :name :rleg)
+                (make-coords :pos (float-vector (car *cross-step-stride*) (- (* 2 (cadr *cross-step-stride*)) *width-offset*) 0) :name :lleg)
+                (make-coords :pos (float-vector 0 (* 2 (cadr *cross-step-stride*)) 0) :name :rleg)
+                (make-coords :pos (float-vector (car *cross-step-stride*) (- (* 3 (cadr *cross-step-stride*)) *width-offset*) 0) :name :lleg)
+                (make-coords :pos (float-vector 0 (* 3 (cadr *cross-step-stride*)) 0) :name :rleg)))
+    (send *ri* :set-gait-generator-param
+          :default-orbit-type :cross
+          :default-step-time 1.4))
+  )

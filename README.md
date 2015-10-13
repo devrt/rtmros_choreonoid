@@ -4,12 +4,4 @@
 
 - catkin build hrpsys_ros_bridge_jvrc and hrpsys_choreonoid
 
-- roslaunch hrpsys_ros_bridge_jvrc jaxon_jvrc_choreonoid.launch
-
-- ~~start simulation in choreonoid~~
-
-- ~~roscd hrpsys_ros_bridge_jvrc; sudo cp config/SensorReaderRTC.*conf /usr/lib/choreonoid-1.5/rtc~~
-
-- ~~sudo cp ~/ros/indigo_parent/devel/lib/{HG,PD}controller.so /usr/lib/choreonoid-1.5/rtc~~
-
-- ~~sudo mkdir -p /usr/lib/choreonoid-1.5/customizer; sudo mkdir /usr/lib/choreonoid-1.5/rtc # if needed~~
+- roslaunch hrpsys_ros_bridge_jvrc jaxon_jvrc_choreonoid.launch TASK:=O1

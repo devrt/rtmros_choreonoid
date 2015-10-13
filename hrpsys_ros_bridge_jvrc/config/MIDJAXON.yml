@@ -23,8 +23,8 @@ robot:
         class: BodyRTCItem
         data: 
           isImmediateMode: true
-          moduleName: "/home/player/rtmros_choreonoid/hrpsys_choreonoid/src/PDcontroller"
-          confFileName: "/home/player/rtmros_choreonoid/hrpsys_ros_bridge_jvrc/config/MIDJAXON.PD.conf"
+          moduleName: "PDcontrollerMIDJAXON"
+          confFileName: "MIDJAXON.PD.conf"
           configurationMode: Use Configuration File
           AutoConnect: false
           InstanceName: MIDJAXON
