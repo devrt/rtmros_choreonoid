@@ -1,0 +1,26 @@
+<launch>
+  <arg name="SIMULATOR_NAME" default="MIDJAXON" />
+  <rosparam command="load"
+            file="$(find hrpsys_ros_bridge_jvrc)/models/MIDJAXON_controller_config.yaml" />
+
+  <arg name="corbaport" default="2809" />
+  <include file="$(find hrpsys_ros_bridge)/launch/hrpsys_ros_bridge.launch">
+    <arg name="SIMULATOR_NAME" value="$(arg SIMULATOR_NAME)" />
+    <arg name="MODEL_FILE" value="$(find jvrc_models)/JAXON_JVRC/MIDJAXON-no-surface.wrl" />
+    <arg name="COLLADA_FILE" value="$(find hrpsys_ros_bridge_jvrc)/models/MIDJAXON-no-surface-BODY.urdf" />
+    <arg name="CONF_FILE" value="$(find hrpsys_ros_bridge_jvrc)/models/MIDJAXON.conf" />
+    <arg name="corbaport" default="$(arg corbaport)" />
+    <arg name="USE_WALKING" default="false" />
+    <arg name="USE_IMPEDANCECONTROLLER" default="false" />
+    <arg name="USE_EMERGENCYSTOPPER" default="false" />
+    <arg name="USE_ROBOT_POSE_EKF" value="false" />
+    <arg name="USE_COLLISIONCHECK" default="false" />
+    <arg name="USE_SOFTERRORLIMIT" default="false" />
+    <arg name="periodic_rate" value="100" />
+    <arg name="USE_VELOCITY_OUTPUT" default="true" />
+    <arg name="PUBLISH_SENSOR_TF" default="false" />
+  </include>
+
+  <node name="midjaxon_jvrc_rviz" pkg="rviz" type="rviz" respawn="true"
+        args="-sync -d $(find hrpsys_ros_bridge_jvrc)/launch/midjaxon.rviz" />
+</launch>

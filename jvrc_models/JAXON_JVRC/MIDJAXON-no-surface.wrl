@@ -679,7 +679,7 @@ DEF MIDJAXON Humanoid {
                                                         DEF lhsensor ForceSensor{
                                                           translation 0 0 -0.069
                                                           rotation 0.382683 -0.92388 -0 3.14159
-                                                          sensorId 3
+                                                          sensorId 1
                                                         } #Sensor
                                                       ]
                                                     } #Segment LARM_LINK7
@@ -990,7 +990,7 @@ DEF MIDJAXON Humanoid {
                                                         DEF rhsensor ForceSensor{
                                                           translation 0 0 -0.069
                                                           rotation -0.382683 -0.92388 -0 3.14159
-                                                          sensorId 2
+                                                          sensorId 0
                                                         } #Sensor
                                                       ]
                                                     } #Segment RARM_LINK7
