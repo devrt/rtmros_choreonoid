@@ -1,13 +1,10 @@
 <launch>
   <arg name="SIMULATOR_NAME" default="MIDJAXON" />
-  <rosparam command="load"
-            file="$(find hrpsys_ros_bridge_jvrc)/models/MIDJAXON_controller_config.yaml" />
-
   <arg name="corbaport" default="2809" />
   <include file="$(find hrpsys_ros_bridge)/launch/hrpsys_ros_bridge.launch">
     <arg name="SIMULATOR_NAME" value="$(arg SIMULATOR_NAME)" />
     <arg name="MODEL_FILE" value="$(find jvrc_models)/JAXON_JVRC/MIDJAXON-no-surface.wrl" />
-    <arg name="COLLADA_FILE" value="$(find hrpsys_ros_bridge_jvrc)/models/MIDJAXON-no-surface-BODY.urdf" />
+    <arg name="COLLADA_FILE" value="$(find hrpsys_ros_bridge_jvrc)/models/MIDJAXON-no-surface.urdf" />
     <arg name="CONF_FILE" value="$(find hrpsys_ros_bridge_jvrc)/models/MIDJAXON.conf" />
     <arg name="corbaport" default="$(arg corbaport)" />
     <arg name="USE_WALKING" default="false" />
